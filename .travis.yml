@@ -160,7 +160,7 @@ before_install:
       brew install jemalloc;
       brew install gsl;
 
-      brew install numpy;
+      pip install numpy;
       brew tap homebrew/science;
       brew install hdf5;
 
