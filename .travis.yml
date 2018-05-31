@@ -168,10 +168,9 @@ before_install:
       ./miniconda.sh -b -p /Users/travis/mc;
       export PATH=/Users/travis/mc/bin:$PATH;
 
-      echo "LOL{$PATH}";
       conda info;
       conda update --yes conda;
-      conda create -n osx_env python=$TRAVIS_PYTHON_VERSION;
+      conda create -n osx_env --yes python=$TRAVIS_PYTHON_VERSION;
       source activate osx_env;
 
       conda install -y numpy=1.14;
