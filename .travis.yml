@@ -174,7 +174,7 @@ before_install:
       conda create -n osx_env python=$TRAVIS_PYTHON_VERSION;
       source activate osx_env;
 
-      conda install numpy=1.14;
+      conda install -y numpy=1.14;
 
       ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
