@@ -109,10 +109,10 @@ matrix:
 #    env: BUILD_TYPE=Release
   - os: osx
     env: BUILD_TYPE=Debug
-    osx_image: xcode9.3
+    osx_image: xcode8.3
     compiler: clang
   - os: osx
-    osx_image: xcode9.3
+    osx_image: xcode8.3
     env: BUILD_TYPE=Release
     compiler: clang
 
@@ -162,6 +162,17 @@ before_install:
 
       brew tap homebrew/science;
       brew install hdf5;
+
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+      chmod +x miniconda.sh
+      ./miniconda.sh -b -p /home/travis/mc
+      export PATH=/home/travis/mc/bin:$PATH
+
+      conda update --yes conda
+      conda create -n osx_env python=$TRAVIS_PYTHON_VERSION
+      source activate osx_env
+
+      conda install numpy=1.14
 
       ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
@@ -325,6 +336,6 @@ after_success:
 
 # Generated using instructions from:
 # https://docs.travis-ci.com/user/notifications/#Slack-notifications
-notifications:
-  slack:
-    secure: PntVovViQom/qkRd7K1wne6ji+3hn67bnrrfRZJ03LYk0PQUBgjNAQQAwEYqGOGeLlCEcKz1rQljUGaYFP5DYtu5BsXeWenSXbNElwfVivzHtEBdS9v4BnB4C0aD5hG2fzXhsbm4bAEq+fTfmyvHTbC8f7pHUV9zfJv4+yTjR0YW+0lYgtODqpxqEGC+f07RwkbsODO87yrZT9oPWZ8Q7a7ZECKcdv38oaBzN3cnHjFXsWTRYTu672FtBKefRohpS01UrobJNAM0L7Bl1huoP52rMw34J6Nl47u+upP/t/iPHi68lk8/0hRf0z+KgOYLSgGb5wwPfNQ9rrOfA1YTjCgVoyj/3pszP6mcVfXN40+5tjww7/RXsuQ+WsbEhOs9Z1cDAdPA0cd3pVb3Iv4an07htNfhLnaATtDe22BbuWD16LCUz/xVrq5XwWtE172EYWk7wyUZd8iofGXLLu/tVLs4lwZG/z1cF4wShpxhK3eXH3V4Y1wR7afpkzTN+z5Y4z5ObqDVMfydg79F4coaH0ky5K30Wf4n9TQ2yaDXIP3yepXBlpY1zXM0Ygmu9W2P5PCd79E5lWoWXoWwa90KmcOeuZ/CSbotHLCiAtzoDHjR70TOkPqEpGmnUubwhcYDnoNXv634FvZvExd97LeAuOlD9xcLUQRQKABVvj04S4k=
+#notifications:
+#  slack:
+#    secure: PntVovViQom/qkRd7K1wne6ji+3hn67bnrrfRZJ03LYk0PQUBgjNAQQAwEYqGOGeLlCEcKz1rQljUGaYFP5DYtu5BsXeWenSXbNElwfVivzHtEBdS9v4BnB4C0aD5hG2fzXhsbm4bAEq+fTfmyvHTbC8f7pHUV9zfJv4+yTjR0YW+0lYgtODqpxqEGC+f07RwkbsODO87yrZT9oPWZ8Q7a7ZECKcdv38oaBzN3cnHjFXsWTRYTu672FtBKefRohpS01UrobJNAM0L7Bl1huoP52rMw34J6Nl47u+upP/t/iPHi68lk8/0hRf0z+KgOYLSgGb5wwPfNQ9rrOfA1YTjCgVoyj/3pszP6mcVfXN40+5tjww7/RXsuQ+WsbEhOs9Z1cDAdPA0cd3pVb3Iv4an07htNfhLnaATtDe22BbuWD16LCUz/xVrq5XwWtE172EYWk7wyUZd8iofGXLLu/tVLs4lwZG/z1cF4wShpxhK3eXH3V4Y1wR7afpkzTN+z5Y4z5ObqDVMfydg79F4coaH0ky5K30Wf4n9TQ2yaDXIP3yepXBlpY1zXM0Ygmu9W2P5PCd79E5lWoWXoWwa90KmcOeuZ/CSbotHLCiAtzoDHjR70TOkPqEpGmnUubwhcYDnoNXv634FvZvExd97LeAuOlD9xcLUQRQKABVvj04S4k=
