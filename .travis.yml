@@ -163,18 +163,18 @@ before_install:
       brew tap homebrew/science;
       brew install hdf5;
 
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
-      chmod +x miniconda.sh
-      ./miniconda.sh -b -p /home/travis/mc
-      export PATH=/home/travis/mc/bin:$PATH
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      chmod +x miniconda.sh;
+      ./miniconda.sh -b -p /home/travis/mc;
+      export PATH=/home/travis/mc/bin:$PATH;
 
-      echo "LOL{$PATH}"
-      conda info
-      conda update --yes conda
-      conda create -n osx_env python=$TRAVIS_PYTHON_VERSION
-      source activate osx_env
+      echo "LOL{$PATH}";
+      conda info;
+      conda update --yes conda;
+      conda create -n osx_env python=$TRAVIS_PYTHON_VERSION;
+      source activate osx_env;
 
-      conda install numpy=1.14
+      conda install numpy=1.14;
 
       ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
