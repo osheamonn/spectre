@@ -168,6 +168,8 @@ before_install:
       ./miniconda.sh -b -p /home/travis/mc
       export PATH=/home/travis/mc/bin:$PATH
 
+      echo "LOL{$PATH}"
+      conda info
       conda update --yes conda
       conda create -n osx_env python=$TRAVIS_PYTHON_VERSION
       source activate osx_env
