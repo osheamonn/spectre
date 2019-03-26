@@ -38,9 +38,11 @@ namespace Initialization {
 template <typename System>
 struct Interface {
   static constexpr size_t dim = System::volume_dim;
-  using simple_tags =
-      db::AddSimpleTags<Tags::Interface<Tags::BoundaryDirectionsExterior<dim>,
-                                        typename System::variables_tag>>;
+  using simple_tags = db::AddSimpleTags<
+      Tags::Interface<Tags::BoundaryDirectionsExterior<dim>,
+                      typename System::variables_tag>,
+      Tags::Interface<Tags::BoundaryDirectionsExterior<dim>,
+                      typename System::primitive_variables_tag>>;
 
   template <typename Directions>
   using face_tags = tmpl::list<
@@ -64,8 +66,6 @@ struct Interface {
                                  Tags::InterfaceMesh<dim>>,
       Tags::Slice<Tags::BoundaryDirectionsExterior<dim>,
                   typename System::spacetime_variables_tag>,
-      Tags::Slice<Tags::BoundaryDirectionsExterior<dim>,
-                  typename System::primitive_variables_tag>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<dim>,
                                  Tags::BoundaryCoordinates<dim>>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<dim>,
@@ -86,17 +86,25 @@ struct Interface {
     const auto& mesh = db::get<Tags::Mesh<dim>>(box);
     std::unordered_map<Direction<dim>,
                        db::item_type<typename System::variables_tag>>
-        external_boundary_vars{};
+        external_boundary_conserved_vars{};
+    std::unordered_map<Direction<dim>,
+                       db::item_type<typename System::primitive_variables_tag>>
+        external_boundary_primitive_vars{};
 
     for (const auto& direction :
          db::get<Tags::Element<dim>>(box).external_boundaries()) {
-      external_boundary_vars[direction] =
+      external_boundary_conserved_vars[direction] =
           db::item_type<typename System::variables_tag>{
               mesh.slice_away(direction.dimension()).number_of_grid_points()};
+      external_boundary_primitive_vars[direction] =
+          db::item_type<typename System::primitive_variables_tag>{
+              mesh.slice_away(direction.dimension()).number_of_grid_points()};
+
     }
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), std::move(external_boundary_vars));
+        std::move(box), std::move(external_boundary_conserved_vars),
+        std::move(external_boundary_primitive_vars));
   }
 };
 

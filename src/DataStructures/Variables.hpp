@@ -270,9 +270,7 @@ class Variables<tmpl::list<Tags...>> {
         (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
   }
 
-  template <typename... SubsetOfTags,
-            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
-                tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
+  template <typename... SubsetOfTags>
   void assign_subset(
       const tuples::TaggedTuple<SubsetOfTags...>& vars) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(

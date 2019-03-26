@@ -197,12 +197,14 @@ struct ImposeDirichletBoundaryConditions {
     return std::forward_as_tuple(std::move(box));
   }
 
-  template <typename TagsList, typename... ReturnTags, typename... ArgumentTags,
+  template <typename TagsList, typename... ReturnTags,
+            typename... ArgumentAndPrimitiveTags, typename... ArgumentTags,
             typename System>
   static void apply_impl_helper_conservative_from_primitive(
       const gsl::not_null<Variables<TagsList>*> conservative_vars,
-      const tuples::TaggedTuple<ArgumentTags...>& argument_vars,
-      tmpl::list<ReturnTags...> /*meta*/, tmpl::list<System> /*meta*/
+      const tuples::TaggedTuple<ArgumentAndPrimitiveTags...>& argument_vars,
+      tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
+      tmpl::list<System> /*meta*/
       ) noexcept {
     System::conservative_from_primitive::apply(
         make_not_null(&get<ReturnTags>(*conservative_vars))...,
@@ -230,25 +232,52 @@ struct ImposeDirichletBoundaryConditions {
     // Apply the boundary condition
     db::mutate_apply<
         tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                                   typename system::variables_tag>>,
+                                   typename system::variables_tag>,
+                   Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                   typename system::primitive_variables_tag>>,
         tmpl::list<>>(
         [](const gsl::not_null<db::item_type<
                Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
                                typename system::variables_tag>>*>
                external_bdry_vars,
+           const gsl::not_null<db::item_type<
+               Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               typename system::primitive_variables_tag>>*>
+               external_bdry_primitive_vars,
            const double time, const auto& boundary_condition,
            const auto& boundary_coords) noexcept {
           for (auto& external_direction_and_vars : *external_bdry_vars) {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
+            auto& primitive_vars = (*external_bdry_primitive_vars)[direction];
 
-            apply_impl_helper_conservative_from_primitive(
-                make_not_null(&vars),
+            // This tmpl::list contains the union of the primitive tags and the
+            // tags needed to compute the conservatives from the primitives.
+            using all_tags_needed_for_boundary_condition =
+                tmpl::remove_duplicates<tmpl::append<
+                    typename system::conservative_from_primitive::argument_tags,
+                    typename system::primitive_variables_tag::tags_list>>;
+
+            auto variables_from_boundary_condition =
                 boundary_condition.variables(
                     boundary_coords.at(direction), time,
-                    typename system::conservative_from_primitive::
-                        argument_tags{}),
+                    all_tags_needed_for_boundary_condition{});
+
+            // This for_each instead of using assign_subset since the
+            // TaggedTuple we're assigning from contains more tags than the
+            // primitive variables we assign into.
+            tmpl::for_each<typename system::primitive_variables_tag::tags_list>(
+                [&variables_from_boundary_condition,
+                 &primitive_vars ](const auto tag) noexcept {
+                  using Tag = tmpl::type_from<decltype(tag)>;
+                  get<Tag>(primitive_vars) =
+                      get<Tag>(variables_from_boundary_condition);
+                });
+
+            apply_impl_helper_conservative_from_primitive(
+                make_not_null(&vars), variables_from_boundary_condition,
                 typename system::conservative_from_primitive::return_tags{},
+                typename system::conservative_from_primitive::argument_tags{},
                 tmpl::list<system>{});
           }
         },
